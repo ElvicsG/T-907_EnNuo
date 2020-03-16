@@ -125,7 +125,8 @@ public class MainActivity extends BaseActivity {
     @BindView(R.id.tv_vop_save)
     TextView tvSave;
     @BindView(R.id.ll_setting)
-    PercentRelativeLayout llSetting;
+    LinearLayout llSetting;
+    //PercentRelativeLayout llSetting;
     @BindView(R.id.iv_tdr_mode)
     ImageView ivTdrMode;
     @BindView(R.id.iv_icms_mode)
@@ -266,10 +267,10 @@ public class MainActivity extends BaseActivity {
             } else if (batteryValue > 2818 && batteryValue <= 3018) {
                 ivBatteryStatus.setImageResource(R.drawable.ic_battery_two);
 
-            } else if (batteryValue > 3018 && batteryValue <= 3220) {
+            } else if (batteryValue > 3018 && batteryValue <= 3120) {
                 ivBatteryStatus.setImageResource(R.drawable.ic_battery_three);
 
-            } else if (batteryValue > 3220) {
+            } else if (batteryValue > 3120) {
                 ivBatteryStatus.setImageResource(R.drawable.ic_battery_four);
 
             }
@@ -299,6 +300,8 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        startMainService();
+        InitPulseWidthInfo();
         ConnectService.needReconnect = true;
         //初始化单位相关
         initUnit();
@@ -306,6 +309,25 @@ public class MainActivity extends BaseActivity {
         initParamInfo();
 
         initBroadcastReceiver();
+    }
+
+    private void InitPulseWidthInfo() {
+        ParamInfo paramInfo = (ParamInfo) StateUtils.getObject(MainActivity.this, Constant.PULSE_WIDTH_INFO_KEY);
+        if (paramInfo != null) {
+            paramInfo.setPulseWidth(0);
+        } else {
+            paramInfo = new ParamInfo();
+            paramInfo.setPulseWidth(0);
+        }
+
+        StateUtils.setObject(MainActivity.this, paramInfo, Constant.PULSE_WIDTH_INFO_KEY);
+
+
+    }
+
+    public void startMainService() {
+        Intent intent = new Intent(MainActivity.this, ConnectService.class);
+        startService(intent);
     }
 
     /**
@@ -612,7 +634,8 @@ public class MainActivity extends BaseActivity {
                     Intent intent = new Intent(MainActivity.this, ConnectService.class);
                     stopService(intent);
                     //finish();
-                    Intent intentSplash = new Intent(MainActivity.this, SplashActivity.class);
+                    //Intent intentSplash = new Intent(MainActivity.this, SplashActivity.class);
+                    Intent intentSplash = new Intent(MainActivity.this, MainActivity.class);
                     startActivity(intentSplash);
 
                 }
@@ -684,11 +707,15 @@ public class MainActivity extends BaseActivity {
         }
         if (TextUtils.isEmpty(length)) {
             length = "0";
+            paramInfo.setLength(length);
+
         } else {
             paramInfo.setLength(length);
         }
         if (TextUtils.isEmpty(vop)) {
             vop = "0";
+            paramInfo.setVop(vop);
+
         } else {
             paramInfo.setVop(vop);
         }
@@ -709,6 +736,7 @@ public class MainActivity extends BaseActivity {
             } else {
                 paramInfo.setLength(UnitUtils.ftToMi(Double.parseDouble(length)));
             }
+
             if (TextUtils.isEmpty(vop)) {
                 vop = "0";
             } else {
@@ -750,9 +778,13 @@ public class MainActivity extends BaseActivity {
                         if (!TextUtils.isEmpty(paramInfo.getLength())) {
                             etLength.setText(String.valueOf(paramInfo.getLength()));
                         }
+                        if(paramInfo.getLength().equals("0"))
+                            etLength.setText("");
                         if (!TextUtils.isEmpty(paramInfo.getVop())) {
                             etVop.setText(String.valueOf(paramInfo.getVop()));
                         }
+                        if(paramInfo.getVop().equals("0"))
+                            etVop.setText("");
                     }
                 } else {
                     //改变数值
@@ -775,9 +807,13 @@ public class MainActivity extends BaseActivity {
                         if (!TextUtils.isEmpty(paramInfo.getLength())) {
                             etLength.setText(String.valueOf(UnitUtils.ftToMi(Double.valueOf(paramInfo.getLength()))));
                         }
+                        if(paramInfo.getLength().equals("0"))
+                            etLength.setText("");
                         if (!TextUtils.isEmpty(paramInfo.getVop())) {
                             etVop.setText(String.valueOf(UnitUtils.ftToMi(Double.valueOf(paramInfo.getVop()))));
                         }
+                        if(paramInfo.getVop().equals("0"))
+                            etVop.setText("");
                     }
                 }
             } else {
@@ -802,9 +838,13 @@ public class MainActivity extends BaseActivity {
                         if (!TextUtils.isEmpty(paramInfo.getLength())) {
                             etLength.setText(String.valueOf(paramInfo.getLength()));
                         }
+                        if(paramInfo.getLength().equals("0"))
+                            etLength.setText("");
                         if (!TextUtils.isEmpty(paramInfo.getVop())) {
                             etVop.setText(String.valueOf(paramInfo.getVop()));
                         }
+                        if(paramInfo.getVop().equals("0"))
+                            etVop.setText("");
                     }
                 } else {
                     //改变数值
@@ -827,9 +867,13 @@ public class MainActivity extends BaseActivity {
                         if (!TextUtils.isEmpty(paramInfo.getLength())) {
                             etLength.setText(String.valueOf(UnitUtils.miToFt(Double.valueOf(paramInfo.getLength()))));
                         }
+                        if(paramInfo.getLength().equals("0"))
+                            etLength.setText("");
                         if (!TextUtils.isEmpty(paramInfo.getVop())) {
                             etVop.setText(String.valueOf(UnitUtils.miToFt(Double.valueOf(paramInfo.getVop()))));
                         }
+                        if(paramInfo.getVop().equals("0"))
+                            etVop.setText("");
                     }
                 }
             }

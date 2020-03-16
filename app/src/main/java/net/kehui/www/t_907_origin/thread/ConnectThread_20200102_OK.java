@@ -106,7 +106,7 @@ public class ConnectThread_20200102_OK extends Thread {
         if (socket == null) {
             return;
         }
-        Constant.DeviceIP = ip;
+        //Constant.DeviceIP = ip;
         handler.sendEmptyMessage(ModeActivity.DEVICE_CONNECTED);
         try {
             //获取数据流
