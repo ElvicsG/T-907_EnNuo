@@ -266,6 +266,9 @@ public class ConnectService extends Service {
 /*        if (wifiUtil.checkState() == 3)
             if (wifiUtil.getSSID().contains(Constant.SSID))
                 handler.sendEmptyMessage(DEVICE_RECONNECT);*/
+
+
+
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
@@ -280,7 +283,6 @@ public class ConnectService extends Service {
             }
         };
         handler.postDelayed(runnable, 30000);
-
         super.onCreate();
     }
 
@@ -324,7 +326,8 @@ public class ConnectService extends Service {
         request[7] = (byte) sum;
         if (connectThread != null)
             connectThread.sendCommand(request);
-        Log.e("【APP->设备】", "指令：" + getCommandStr(command) + " # 数据：" + getDataTransfer(command, dataTransfer));
+        Log.e("【APP->设备】", "指令：" + getCommandStr(command) + " # 数据：" + getDataTransfer(command, dataTransfer)+" 禁止请求电量");
+
     }
 
     //TODO 20101219输出命令和数据

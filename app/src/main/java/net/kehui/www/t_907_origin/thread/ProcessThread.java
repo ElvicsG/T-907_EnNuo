@@ -50,7 +50,8 @@ public class ProcessThread extends Thread {
 
     private void SendCmdMessage(int[] msgData) {
         //Log.e("【设备-->APP】", " 指令：" + msgData[5] + " 传输数据：" + msgData[6] + " 全部数据：" + Arrays.toString(msgData));
-        Log.e("【设备-->APP】", " 指令：" + msgData[5] + " 传输数据：" + msgData[6]);
+        Log.e("【设备-->APP】", " 指令：" + msgData[5] + " 传输数据：" + msgData[6] + " 允许请求电量");
+
         Message message = Message.obtain();
         message.what = ModeActivity.GET_COMMAND;
         Bundle bundle = new Bundle();

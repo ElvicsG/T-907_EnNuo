@@ -224,7 +224,7 @@ public class MainActivity extends BaseActivity {
                     command = 0x06;
                     dataTransfer = 0x08;
                     startService();
-                }, 20);
+                }, 1000);
             }
             //网络断开，更换网络图标
             else if (action.equals(BROADCAST_ACTION_DEVICE_CONNECT_FAILURE)) {
@@ -267,10 +267,10 @@ public class MainActivity extends BaseActivity {
             } else if (batteryValue > 2818 && batteryValue <= 3018) {
                 ivBatteryStatus.setImageResource(R.drawable.ic_battery_two);
 
-            } else if (batteryValue > 3018 && batteryValue <= 3120) {
+            } else if (batteryValue > 3018 && batteryValue <= 3220) {
                 ivBatteryStatus.setImageResource(R.drawable.ic_battery_three);
 
-            } else if (batteryValue > 3120) {
+            } else if (batteryValue > 3220) {
                 ivBatteryStatus.setImageResource(R.drawable.ic_battery_four);
 
             }
