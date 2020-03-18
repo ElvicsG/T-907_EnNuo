@@ -50,6 +50,10 @@ public class ProcessThread extends Thread {
 
     private void SendCmdMessage(int[] msgData) {
         //Log.e("【设备-->APP】", " 指令：" + msgData[5] + " 传输数据：" + msgData[6] + " 全部数据：" + Arrays.toString(msgData));
+
+
+        //TODO 20200315 接收到命令时允许获取电量
+        ConnectService.canAskPower = true;
         Log.e("【设备-->APP】", " 指令：" + msgData[5] + " 传输数据：" + msgData[6] + " 允许请求电量");
 
         Message message = Message.obtain();
