@@ -324,11 +324,13 @@ public class ConnectService extends Service {
         request[6] = (byte) dataTransfer;
         int sum = request[4] + request[5] + request[6];
         request[7] = (byte) sum;
+
+        //GC20200317
+        canAskPower = false;
+
         if (connectThread != null)
             connectThread.sendCommand(request);
 
-        //TODO 20200315 发命令时禁止获取电量
-        canAskPower = false;
         Log.e("【APP->设备】", "指令：" + getCommandStr(command) + " # 数据：" + getDataTransfer(command, dataTransfer) + " 禁止请求电量");
 
     }

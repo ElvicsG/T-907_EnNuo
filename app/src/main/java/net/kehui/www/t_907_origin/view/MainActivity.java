@@ -224,7 +224,7 @@ public class MainActivity extends BaseActivity {
                     command = 0x06;
                     dataTransfer = 0x08;
                     startService();
-                }, 20);
+                }, 20); //GC20200317
             }
             //网络断开，更换网络图标
             else if (action.equals(BROADCAST_ACTION_DEVICE_CONNECT_FAILURE)) {
