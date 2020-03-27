@@ -219,12 +219,15 @@ public class MainActivity extends BaseActivity {
                 //如果成功，在跳转ModeActivity时需要主动下发给设备指令
                 ConnectService.isConnected = true;
                 ivWifiStatus.setImageResource(R.drawable.ic_wifi_connected);
-                handler.postDelayed(() -> {
-                    //电量
-                    command = 0x06;
-                    dataTransfer = 0x08;
-                    startService();
-                }, 20); //GC20200317
+                if(ConnectService.canAskPower==true) {
+                    handler.postDelayed(() -> {
+                        ConnectService.canAskPower=false;
+                        //电量
+                        command = 0x06;
+                        dataTransfer = 0x08;
+                        startService();
+                    }, 100);
+                }
             }
             //网络断开，更换网络图标
             else if (action.equals(BROADCAST_ACTION_DEVICE_CONNECT_FAILURE)) {

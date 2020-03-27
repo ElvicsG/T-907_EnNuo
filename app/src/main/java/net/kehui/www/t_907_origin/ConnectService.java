@@ -99,6 +99,10 @@ public class ConnectService extends Service {
                 break;
             case DEVICE_DISCONNECTED:
                 //Toast.makeText(ConnectService.this, getResources().getString(R.string.disconnect), Toast.LENGTH_LONG).show();
+                //TODO 20200324 连接断开时，重置变量
+                socket = null;
+                connectThread = null;
+                processThread = null;
                 break;
             case DEVICE_CONNECTED:
                 Toast.makeText(this, getResources().getString(R.string
@@ -165,13 +169,22 @@ public class ConnectService extends Service {
                     }
                 }*/
                 if (!ConnectService.isConnected) {
-                    socket= new Socket(Constant.DeviceIP, PORT);
-                    socket.setKeepAlive(true);
-                    connectThread = new ConnectThread(socket, handler, Constant.DeviceIP);
-                    connectThread.start();
+                    Log.e("【SOCKET连接】", "开始连接");
 
-                    processThread = new ProcessThread(handler);
-                    processThread.start();
+                    if (socket == null) {
+                        socket = new Socket(Constant.DeviceIP, PORT);
+                        socket.setKeepAlive(true);
+                    }
+                    if (connectThread == null) {
+                        connectThread = new ConnectThread(socket, handler, Constant.DeviceIP);
+                        connectThread.start();
+                    }
+                    if (processThread == null) {
+                        processThread = new ProcessThread(handler);
+                        processThread.start();
+                    }
+                    Log.e("【SOCKET连接】", "连接成功结束");
+
                 }
                 /*ArrayList<String> connectedIP = getConnectedIP();
                 for (String ip : connectedIP) {
@@ -191,6 +204,8 @@ public class ConnectService extends Service {
                 }
                 sendBroadcast(BROADCAST_ACTION_DEVICE_CONNECT_FAILURE, null, null);
                 handler.sendEmptyMessage(DEVICE_DISCONNECTED);
+                Log.e("【SOCKET连接】", "连接失败重连");
+
                 handler.sendEmptyMessage(DEVICE_RECONNECT);
             }
         });
@@ -215,6 +230,8 @@ public class ConnectService extends Service {
                 /*if (info != null && isWifiConnect == false) {*/
                 if (info != null) {
                     if ((info.isConnected() == true && info.getExtraInfo().contains(Constant.SSID)) && isWifiConnect == false) {
+                        Log.e("【SOCKET连接】", "网络连接状态变化，重连");
+
                         handler.sendEmptyMessage(DEVICE_RECONNECT);
                     }
                 } else {
@@ -225,6 +242,9 @@ public class ConnectService extends Service {
                         connectThread.getOutputStream().flush();
                         connectThread.getOutputStream().close();
                         connectThread.getSocket().close();
+                        socket = null;
+                        connectThread = null;
+                        processThread = null;
                     } catch (Exception e1) {
                         e1.printStackTrace();
                     }
@@ -254,6 +274,7 @@ public class ConnectService extends Service {
         } else {
             handler.sendEmptyMessage(DEVICE_RECONNECT);
         }
+        Log.e("【SOCKET连接】", "服务启动");
 
 
         IntentFilter intentFilter = new IntentFilter();
@@ -268,13 +289,13 @@ public class ConnectService extends Service {
                 handler.sendEmptyMessage(DEVICE_RECONNECT);*/
 
 
-
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
 
                 //如果连接正常并且不在接收波形，则收取电量。
-                if (isConnected == true && canAskPower == true) {
+                if (isConnected == true && ConnectService.canAskPower == true) {
+                    ConnectService.canAskPower = false;
                     command = 0x06;
                     dataTransfer = 0x08;
                     sendCommand();
@@ -308,6 +329,9 @@ public class ConnectService extends Service {
      * APP下发命令
      */
     public void sendCommand() {
+
+        ConnectService.canAskPower = false;
+
         byte[] request = new byte[8];
         //数据头部分
         request[0] = (byte) 0xeb;
@@ -324,13 +348,10 @@ public class ConnectService extends Service {
         request[6] = (byte) dataTransfer;
         int sum = request[4] + request[5] + request[6];
         request[7] = (byte) sum;
-
-        //GC20200317
-        canAskPower = false;
-
         if (connectThread != null)
             connectThread.sendCommand(request);
 
+        //TODO 20200315 发命令时禁止获取电量
         Log.e("【APP->设备】", "指令：" + getCommandStr(command) + " # 数据：" + getDataTransfer(command, dataTransfer) + " 禁止请求电量");
 
     }

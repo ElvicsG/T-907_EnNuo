@@ -24,6 +24,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import javax.security.auth.login.LoginException;
 
 import static android.content.Context.SYSTEM_HEALTH_SERVICE;
+import static net.kehui.www.t_907_origin.ConnectService.DEVICE_DISCONNECTED;
 import static net.kehui.www.t_907_origin.base.BaseActivity.COMMAND_MODE;
 import static net.kehui.www.t_907_origin.base.BaseActivity.COMMAND_RANGE;
 import static net.kehui.www.t_907_origin.base.BaseActivity.COMMAND_RECEIVE_WAVE;
@@ -463,7 +464,10 @@ public class ConnectThread extends Thread {
             }
         } catch (
                 IOException | InterruptedException e) {
+            handler.sendEmptyMessage(DEVICE_DISCONNECTED);
             handler.sendEmptyMessage(ConnectService.DEVICE_RECONNECT);
+            Log.e("【SOCKET连接】", "socket异常，重连。");
+
             e.printStackTrace();
         }
     }
