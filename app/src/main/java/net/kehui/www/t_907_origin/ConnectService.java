@@ -103,6 +103,7 @@ public class ConnectService extends Service {
                 socket = null;
                 connectThread = null;
                 processThread = null;
+                needReconnect=true;
                 break;
             case DEVICE_CONNECTED:
                 Toast.makeText(this, getResources().getString(R.string
@@ -297,7 +298,9 @@ public class ConnectService extends Service {
                 if (isConnected == true && ConnectService.canAskPower == true) {
                     ConnectService.canAskPower = false;
                     command = 0x06;
-                    dataTransfer = 0x08;
+
+                    //dataTransfer = 0x08;
+                    dataTransfer = 0x13;
                     sendCommand();
                 }
                 handler.postDelayed(this, 30000);

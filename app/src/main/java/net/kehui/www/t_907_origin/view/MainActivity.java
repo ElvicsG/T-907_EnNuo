@@ -224,7 +224,8 @@ public class MainActivity extends BaseActivity {
                         ConnectService.canAskPower=false;
                         //电量
                         command = 0x06;
-                        dataTransfer = 0x08;
+                        //dataTransfer = 0x08;
+                        dataTransfer = 0x13;
                         startService();
                     }, 100);
                 }

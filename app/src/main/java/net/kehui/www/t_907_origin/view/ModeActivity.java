@@ -1921,7 +1921,17 @@ public class ModeActivity extends BaseActivity {
             selectSim = 1;
             setSelectSim(selectSim);
             //20191217下翻有效
-            tvWaveNext.setEnabled(true);
+
+
+            //TODO 20200325 二次脉冲如果是从数据库显示，则禁用上翻下翻按键，测试后恢复。
+            if(!isDatabase) {
+                tvWaveNext.setEnabled(true);
+            }
+            else{
+                tvWaveNext.setEnabled(false);
+                tvWavePre.setEnabled(false);
+            }
+
         } else {
 
         }
