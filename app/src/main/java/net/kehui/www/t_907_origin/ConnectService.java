@@ -103,7 +103,7 @@ public class ConnectService extends Service {
                 socket = null;
                 connectThread = null;
                 processThread = null;
-                needReconnect=true;
+                needReconnect = true;
                 break;
             case DEVICE_CONNECTED:
                 Toast.makeText(this, getResources().getString(R.string
@@ -351,11 +351,16 @@ public class ConnectService extends Service {
         request[6] = (byte) dataTransfer;
         int sum = request[4] + request[5] + request[6];
         request[7] = (byte) sum;
-        if (connectThread != null)
+
+        //TODO 20200407 发送数据是判断连接是否正常，否则不发送
+        if (connectThread != null && ConnectService.isConnected == true) {
+
             connectThread.sendCommand(request);
+            Log.e("【APP->设备】", "指令：" + getCommandStr(command) + " # 数据：" + getDataTransfer(command, dataTransfer) + " 禁止请求电量");
+
+        }
 
         //TODO 20200315 发命令时禁止获取电量
-        Log.e("【APP->设备】", "指令：" + getCommandStr(command) + " # 数据：" + getDataTransfer(command, dataTransfer) + " 禁止请求电量");
 
     }
 

@@ -5,7 +5,7 @@ package net.kehui.www.t_907_origin.application;
  * @date 2019/7/8
  */
 public class Constant {
-    public static final String SSID = "T-9071";
+    public static final String SSID = "T-907";
     public static final String DeviceIP = "192.168.5.143";
     public static final String BASE_API = "http://cfl.kehui.cn/";
     public static final int MiUnit = 0;
@@ -53,6 +53,9 @@ public class Constant {
 
     //TODO 20191218 触发框出现后不点击取消测试，按机器返回键的处理逻辑
     public static boolean isCancelAim = false;
+
+    //TODO 20200407 增加测试中控制，测试中未绘制波形，不要请求电量。
+    public static boolean isTesting=false;
 
     //TODO 20191219 当前语言
     public static String currentLanguage = "";

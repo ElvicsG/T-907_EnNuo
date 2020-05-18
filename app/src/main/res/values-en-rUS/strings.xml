@@ -159,5 +159,6 @@ Select the test mode after setting parameters properly.</string>
     <string name="update_now">Update Now.</string>
     <string name="update_later">Update Later.</string>
     <string name="maxpulsewidth">The maximum value of pulsewidth is 7000.</string>
+    <string name="test_on_no_connect">Please wait for the device to connect successfully!</string>
 
 </resources>

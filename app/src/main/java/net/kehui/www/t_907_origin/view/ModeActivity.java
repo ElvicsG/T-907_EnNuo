@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.SyncStateContract;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -42,6 +43,7 @@ import net.kehui.www.t_907_origin.application.AppConfig;
 import net.kehui.www.t_907_origin.application.Constant;
 import net.kehui.www.t_907_origin.base.BaseActivity;
 import net.kehui.www.t_907_origin.entity.ParamInfo;
+import net.kehui.www.t_907_origin.thread.ConnectThread;
 import net.kehui.www.t_907_origin.ui.MoveView;
 import net.kehui.www.t_907_origin.ui.MoveWaveView;
 import net.kehui.www.t_907_origin.ui.SaveRecordsDialog;
@@ -270,6 +272,15 @@ public class ModeActivity extends BaseActivity {
                     // Log.e("【时效测试】", "组织波形数据完毕");
                     displayWave();
                 }
+
+                //TODO 20200407 波形绘制完毕，恢复测试按钮可用性，允许请求电量
+                Constant.isTesting = false;
+                ConnectService.canAskPower = true;
+                AllowSetRange = true;
+                tvTest.setEnabled(true);
+
+                Log.e("【请求电量时机控制】", "波形绘制完毕，允许请求电量。");
+
                 //Log.e("【时效测试】", "绘制完毕");
 
                 break;
@@ -289,6 +300,7 @@ public class ModeActivity extends BaseActivity {
         return false;
     });
     private boolean AlreadDisplayWave;
+    private boolean AllowSetRange = true;
 
 
     /**
@@ -570,6 +582,8 @@ public class ModeActivity extends BaseActivity {
      * 处理APP接收的命令
      */
     private void doWifiCommand(int[] wifiArray) {
+
+
         //仪器触发时：APP发送接收数据命令
         if ((wifiArray[5] == COMMAND_TRIGGER) && (wifiArray[6] == TRIGGERED)) {
             command = COMMAND_RECEIVE_WAVE;
@@ -583,6 +597,7 @@ public class ModeActivity extends BaseActivity {
                 Constant.isCancelAim = true;
                 tDialog.dismiss();
             }
+
             tDialog = new TDialog.Builder(getSupportFragmentManager())
                     .setLayoutRes(R.layout.receiving_data)
                     .setScreenWidthAspect(this, 0.25f)
@@ -610,6 +625,12 @@ public class ModeActivity extends BaseActivity {
             }
 
         }
+        //TODO 20200407 普通命令解析完毕，允许请求电量
+        if (!Constant.isTesting) {
+            ConnectService.canAskPower = true;
+            Log.e("【请求电量时机控制】", "触发和电量命令数据处理完毕，允许请求电量。");
+        }
+
 
     }
 
@@ -661,6 +682,13 @@ public class ModeActivity extends BaseActivity {
                     setGain(Constant.Para[2]);
                     setVelocityNoCmd(Constant.Para[3]);
                 } else {
+
+                    //取消测试中状态
+                    //已显示波形状态恢复为true
+                    Constant.isTesting = false;
+                    AllowSetRange = true;
+                    AlreadDisplayWave = false;
+
                     //第一次连接设备初始化方式
                     //模式
                     setMode(mode);
@@ -722,7 +750,9 @@ public class ModeActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mode);
+
         AlreadDisplayWave = false;
+
         modeIntent = getIntent().getIntExtra(MODE_KEY, 0);
         mode = getIntent().getIntExtra(MODE_KEY, 0);
         isReceiveData = getIntent().getBooleanExtra("isReceiveData", true);
@@ -1472,7 +1502,14 @@ public class ModeActivity extends BaseActivity {
 
         tvZoomMin.setEnabled(true);
         tvZoomPlus.setEnabled(true);
+
         AlreadDisplayWave = true;
+
+        //TODO 20200401 MIM模式下，读取数据库时，禁用上翻下翻
+        if (isDatabase) {
+            tvWaveNext.setEnabled(false);
+            tvWavePre.setEnabled(false);
+        }
     }
 
     //设置滑块参数
@@ -1809,7 +1846,7 @@ public class ModeActivity extends BaseActivity {
     private void doWifiWave(int[] wifiArray) {
         if (wifiArray[3] == WAVE_TDR_ICM_DECAY) {
             System.arraycopy(wifiArray, 8, waveArray, 0, dataMax);
-            ConnectService.canAskPower = true;
+            //ConnectService.canAskPower = true;
             Constant.WaveData = waveArray;
             handler.sendEmptyMessage(VIEW_REFRESH);
         } else if (wifiArray[3] == WAVE_SIM || wifiArray[3] == 0x88
@@ -1897,7 +1934,7 @@ public class ModeActivity extends BaseActivity {
                 System.arraycopy(wifiArray, 8, simArray8, 0, dataMax);
                 Constant.TempData8 = simArray8;
                 handler.sendEmptyMessage(ORGNIZE_WAVE);
-                ConnectService.canAskPower = true;
+                //ConnectService.canAskPower = true;
                 Log.e("【MIM】", "第9条");
 
             }
@@ -1924,10 +1961,9 @@ public class ModeActivity extends BaseActivity {
 
 
             //TODO 20200325 二次脉冲如果是从数据库显示，则禁用上翻下翻按键，测试后恢复。
-            if(!isDatabase) {
+            if (!isDatabase) {
                 tvWaveNext.setEnabled(true);
-            }
-            else{
+            } else {
                 tvWaveNext.setEnabled(false);
                 tvWavePre.setEnabled(false);
             }
@@ -2203,7 +2239,11 @@ public class ModeActivity extends BaseActivity {
      * @param range 需要发送的范围控制命令值 / 响应信息栏范围变化
      */
     public void setRange(int range) {
-        AlreadDisplayWave = false;
+
+        if (AllowSetRange == false)
+            return;
+
+        AllowSetRange = false;
         this.range = range;
 
         switch (range) {
@@ -2493,6 +2533,17 @@ public class ModeActivity extends BaseActivity {
             , R.id.tv_origin, R.id.tv_trigger_delay, R.id.tv_delay_plus, R.id.tv_delay_min, R.id.ll_trigger_delay, R.id.iv_close_trigger_delay,
             R.id.tv_wave_next, R.id.tv_wave_pre})
     public void onClick(View view) {
+
+        //TODO 20200416
+        //如果weight连接不执行
+        if (ConnectService.isConnected != true) {
+            Toast.makeText(ModeActivity.this, R.string.test_on_no_connect, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        //如果测试中不执行
+        if (Constant.isTesting == true)
+            return;
+
         switch (view.getId()) {
             case R.id.ll_adjust:
                 break;
@@ -2779,6 +2830,7 @@ public class ModeActivity extends BaseActivity {
                 showCalView();
                 break;
             case R.id.tv_range:
+
                 showRangeView();
                 break;
             case R.id.tv_file:
@@ -3057,6 +3109,13 @@ public class ModeActivity extends BaseActivity {
     }
 
     private void showRangeView() {
+
+        //TODO 20200407 点击范围按钮的前提是与设备连接成功，否则吐司，禁止继续执行代码
+        if (!ConnectService.isConnected) {
+            Toast.makeText(ModeActivity.this, R.string.test_on_no_connect, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         llRange.setVisibility(View.VISIBLE);
         llRange.setOnClickListener(null);
         closeFileView();
@@ -3292,6 +3351,19 @@ public class ModeActivity extends BaseActivity {
      */
     private void clickTest() {
 
+        //TODO 20200407 点击测试按钮的前提是与设备连接成功，否则吐司，禁止继续执行代码
+        if (!ConnectService.isConnected) {
+            Toast.makeText(ModeActivity.this, R.string.test_on_no_connect, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        //TODO 20200415 如果测试中不要再测试
+        if (Constant.isTesting == true)
+            return;
+        //TODO 20200407 点击测试后，禁用测试按钮，等待波形绘制完毕才能继续点。
+        Constant.isTesting = true;
+        tvTest.setEnabled(false);
+
 
         Constant.SaveToDBGain = Constant.Gain;
         closeAllView();
@@ -3302,6 +3374,9 @@ public class ModeActivity extends BaseActivity {
 
             initCursor();
         }*/
+
+        if (tDialog != null)
+            tDialog.dismiss();
 
         //初始化距离
         if (mode == TDR) {
@@ -3359,9 +3434,15 @@ public class ModeActivity extends BaseActivity {
                             //设置取消测试标志位true
                             Constant.isCancelAim = true;
                             tDialog.dismiss();
+                            //TODO 20200407 取消测试后，恢复测试按钮可用性
+                            tvTest.setEnabled(true);
+                            Constant.isTesting = false;
+                            AlreadDisplayWave = false;
+                            AllowSetRange = true;
+
                             command = COMMAND_TEST;
                             dataTransfer = CANCEL_TEST;
-                            ConnectService.canAskPower = true;
+                            //ConnectService.canAskPower = true;
 
                             startService();
 
@@ -3373,8 +3454,8 @@ public class ModeActivity extends BaseActivity {
             command = COMMAND_TEST;
             dataTransfer = TESTING;
             startService();
+            AlreadDisplayWave = false;
             ConnectService.canAskPower = false;
-
             //Log.e("【时效测试】", "命令发送测试命令");
             Constant.isCancelAim = false;
         }
@@ -3409,15 +3490,17 @@ public class ModeActivity extends BaseActivity {
      * 点击记忆按钮执行的方法  //GC20190703
      */
     public void clickMemory() {
-        closeCompareView();
-        isMemory = true;
-        //TODO 20191224 修改记忆波形数据结构
-        //System.arraycopy(waveDraw, 0, waveCompare, 0, 510);
-        waveCompare = new int[Constant.WaveData.length];
-        System.arraycopy(Constant.WaveData, 0, waveCompare, 0, Constant.WaveData.length);
-        //记录记忆数据的方式范围   //GC20190703再优化
-        modeBefore = mode;
-        rangeBefore = range;
+        if (AlreadDisplayWave == true) {
+            closeCompareView();
+            isMemory = true;
+            //TODO 20191224 修改记忆波形数据结构
+            //System.arraycopy(waveDraw, 0, waveCompare, 0, 510);
+            waveCompare = new int[Constant.WaveData.length];
+            System.arraycopy(Constant.WaveData, 0, waveCompare, 0, Constant.WaveData.length);
+            //记录记忆数据的方式范围   //GC20190703再优化
+            modeBefore = mode;
+            rangeBefore = range;
+        }
     }
 
     //去服务发送指令

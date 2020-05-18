@@ -53,8 +53,11 @@ public class ProcessThread extends Thread {
 
 
         //TODO 20200315 接收到命令时允许获取电量
-        ConnectService.canAskPower = true;
-        Log.e("【设备-->APP】", " 指令：" + msgData[5] + " 传输数据：" + msgData[6] + " 允许请求电量");
+        //TODO20200407禁用掉允许请求电量，改为命令解析完毕后允许请求电量。
+        //ConnectService.canAskPower = true;
+
+        //Log.e("【设备-->APP】", " 指令：" + msgData[5] + " 传输数据：" + msgData[6] + " 允许请求电量");
+        Log.e("【设备-->APP】", " 指令：" + getCommandStr(msgData[5]) + "(" + msgData[5] + ") 传输数据：" + msgData[6]);
 
         Message message = Message.obtain();
         message.what = ModeActivity.GET_COMMAND;
@@ -62,6 +65,43 @@ public class ProcessThread extends Thread {
         bundle.putIntArray("CMD", msgData);
         message.setData(bundle);
         handler.sendMessage(message);
+
+    }
+
+    //TODO 20101219输出命令和数据
+    private String getCommandStr(int cmdStr) {
+        String returnStr = "脉宽";
+        switch (cmdStr) {
+            case 1:
+                returnStr = "1 测试";
+                break;
+            case 2:
+                returnStr = "2 模式";
+                break;
+            case 3:
+                returnStr = "3 范围";
+                break;
+            case 4:
+                returnStr = "4 增益";
+                break;
+            case 5:
+                returnStr = "5 延时";
+                break;
+            case 6:
+                returnStr = "6 电量";
+                break;
+            case 7:
+                returnStr = "7 平衡";
+                break;
+            case 9:
+                returnStr = "9 接受数据";
+                break;
+            case 10:
+                returnStr = "10 脉宽";
+                break;
+
+        }
+        return returnStr;
     }
 
     private void SendWaveMessage(int[] waveData) {
